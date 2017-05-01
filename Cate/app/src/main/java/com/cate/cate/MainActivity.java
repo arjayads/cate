@@ -5,6 +5,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -45,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
                 WebView webView = (WebView) findViewById(R.id.cat_imageView);
                 webView.loadData("Please wait...", "text/html; charset=utf-8", "utf-8");
 
+                // TODO: internet availability
                 findTheCat(webView);
             }
         });
@@ -87,10 +89,14 @@ public class MainActivity extends AppCompatActivity {
                     if(response.body().getImageList().size() > 0) {
 
                         ThaCatApiImage image = response.body().getImageList().get(0);
-                        String content = "<a target='_blank' href='"+ image.getSourceUrl() +"'><img style='object-fit: cover; height: auto; width: 200px;' src='"+image.getUrl()+"'></a>";
+
+                        DisplayMetrics displayMetrics = new DisplayMetrics();
+                        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                        int width = displayMetrics.widthPixels-175;
+
+                        String content = "<a target='_blank' href='"+ image.getSourceUrl() +"'><img style='object-fit: cover; height: auto; width: "+width+"px;' src='"+image.getUrl()+"'></a>";
                         webView.loadData(content, "text/html; charset=utf-8", "utf-8");
 
-                        Log.d("MAIN", content);
                     } else {
                         findTheCat(webView);
                     }
