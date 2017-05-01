@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Cate</string>
+    <string name="action_random_facts">Cat random facts</string>
+    <string name="action_share_fb">Share with Facebook</string>
+    <string name="action_set_wallpaper">Set as Wallpaper</string>
+    <string name="action_save">Save to phone</string>
 </resources>
