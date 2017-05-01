@@ -92,7 +92,12 @@ public class MainActivity extends AppCompatActivity {
 
                         DisplayMetrics displayMetrics = new DisplayMetrics();
                         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+
                         int width = displayMetrics.widthPixels-175;
+                        if (displayMetrics.widthPixels > displayMetrics.heightPixels) { // screen is rotated
+                            width = displayMetrics.widthPixels-280;
+                        }
 
                         String content = "<a target='_blank' href='"+ image.getSourceUrl() +"'><img style='object-fit: cover; height: auto; width: "+width+"px;' src='"+image.getUrl()+"'></a>";
                         webView.loadData(content, "text/html; charset=utf-8", "utf-8");
