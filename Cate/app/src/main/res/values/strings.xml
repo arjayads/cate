@@ -4,4 +4,5 @@
     <string name="action_share_fb">Share with Facebook</string>
     <string name="action_set_wallpaper">Set as Wallpaper</string>
     <string name="action_save">Save to phone</string>
+    <string name="please_wait">Please wait...</string>
 </resources>
