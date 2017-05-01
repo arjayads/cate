@@ -42,7 +42,10 @@ public class MainActivity extends AppCompatActivity {
 //                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
 //                        .setAction("Action", null).show();
 
-                findTheCat();
+                WebView webView = (WebView) findViewById(R.id.cat_imageView);
+                webView.loadData("Please wait...", "text/html; charset=utf-8", "utf-8");
+
+                findTheCat(webView);
             }
         });
     }
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void findTheCat() {
+    private void findTheCat(final WebView webView) {
 
         TheCatAPI theCatAPI = TheCatAPI.retrofit.create(TheCatAPI.class);
 
@@ -84,16 +87,12 @@ public class MainActivity extends AppCompatActivity {
                     if(response.body().getImageList().size() > 0) {
 
                         ThaCatApiImage image = response.body().getImageList().get(0);
-
-
-                        WebView webView = (WebView ) findViewById(R.id.cat_imageView);
-
                         String content = "<a target='_blank' href='"+ image.getSourceUrl() +"'><img style='object-fit: cover; height: auto; width: 200px;' src='"+image.getUrl()+"'></a>";
                         webView.loadData(content, "text/html; charset=utf-8", "utf-8");
 
                         Log.d("MAIN", content);
                     } else {
-                        findTheCat();
+                        findTheCat(webView);
                     }
                 }catch (Exception e) {
                     e.getLocalizedMessage();
