@@ -1,6 +1,8 @@
 package com.cate.cate;
 
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -13,12 +15,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 
+import com.android.volley.toolbox.ImageRequest;
 import com.cate.cate.api.ThaCatApiImage;
 import com.cate.cate.api.ThaCatApiResponse;
 import com.cate.cate.api.TheCatAPI;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.UUID;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,8 +42,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String CAT_SIZE_SMALL = "small";
 
     private static String CAT_IMAGE_URL = "";
+    private static String CAT_TAG = "CATE";
 
     private static Snackbar snackbar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
 
         webView.loadData(getResources().getString(R.string.please_wait), "text/html; charset=utf-8", "utf-8");
 
-        randomCatFacts(webView);
+         randomCatFacts(webView);
     }
 
     @Override
@@ -68,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
 
         clearCatImageUrl();
+
+        VolleyRequestQueue.getInstance(this).cancelAll(CAT_TAG);
     }
 
     @Override
@@ -90,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
         } else if (id == R.id.action_save) {
             if (CAT_IMAGE_URL.equals("")) {
                 showSnackbar("No cate to save. Tap the floating button to get one.");
+            } else {
+                saveCateImage();
             }
             Log.d("MAIN", CAT_IMAGE_URL);
             return true;
@@ -100,7 +115,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void findTheCat(final WebView webView) {
 
-        snackbar.dismiss();
+        if (snackbar != null) {
+            snackbar.dismiss();
+        }
 
         final DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -216,5 +233,57 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         snackbar.show();
+    }
+
+    private String imageExtension(String url) {
+        if(url != null) {
+            int lastIndexOfDot = url.lastIndexOf(".");
+            return url.substring(lastIndexOfDot, url.length());
+        }
+        return "jpg"; // default
+    }
+
+    private void saveCateImage() {
+
+        ImageRequest imageRequest = new ImageRequest(CAT_IMAGE_URL, new com.android.volley.Response.Listener<Bitmap>() {
+            @Override
+            public void onResponse(Bitmap response) {
+
+                OutputStream fOut = null;
+
+                try {
+                    String imageExtension = imageExtension(CAT_IMAGE_URL);
+
+                    final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/cate/");
+
+                    // Make sure the Pictures directory exists.
+                    if(!path.exists())
+                    {
+                        path.mkdirs();
+                    }
+
+                    String filename = UUID.randomUUID().toString().replaceAll("-", "");
+                    final File file = new File(path, filename + imageExtension);
+
+                    fOut = new FileOutputStream(file);
+
+                    response.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+
+                }catch (Exception e) {
+                    Log.d("MAIN", e.getMessage());
+                } finally {
+                    try {
+
+                        fOut.close(); // do not forget to close the stream
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }, 0, 0, null, null, null);
+
+        // Access the RequestQueue through your singleton class.
+        VolleyRequestQueue.getInstance(this).addToRequestQueue(imageRequest);
     }
 }
