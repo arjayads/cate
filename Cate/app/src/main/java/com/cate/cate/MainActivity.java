@@ -1,5 +1,6 @@
 package com.cate.cate;
 
+import android.app.Activity;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -75,10 +76,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findTheCat(final WebView webView) {
+        final DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+        String catSize = MainActivity.CAT_SIZE_SMALL;
+
+        if (displayMetrics.widthPixels > 500) {
+            catSize = MainActivity.CAT_SIZE_MEDIUM;
+        }
 
         TheCatAPI theCatAPI = TheCatAPI.retrofit.create(TheCatAPI.class);
 
-        Call<ThaCatApiResponse> call = theCatAPI.loadCats(MainActivity.CAT_FORMAT_XML, MainActivity.CAT_KEY, MainActivity.CAT_SIZE_MEDIUM);
+        Call<ThaCatApiResponse> call = theCatAPI.loadCats(MainActivity.CAT_FORMAT_XML, MainActivity.CAT_KEY, catSize);
 
         call.enqueue(new Callback<ThaCatApiResponse>() {
 
@@ -90,12 +99,9 @@ public class MainActivity extends AppCompatActivity {
 
                         ThaCatApiImage image = response.body().getImageList().get(0);
 
-                        DisplayMetrics displayMetrics = new DisplayMetrics();
-                        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-
-
                         int width = displayMetrics.widthPixels-175;
-                        if (displayMetrics.widthPixels > displayMetrics.heightPixels) { // screen is rotated
+                        if(getResources().getConfiguration().orientation == 2) // landscape
+                        {
                             width = displayMetrics.widthPixels-280;
                         }
 
