@@ -1,12 +1,32 @@
 package com.cate.cate;
 
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.cate.cate.api.ThaCatApiImage;
+import com.cate.cate.api.ThaCatApiResponse;
+import com.cate.cate.api.TheCatAPI;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String CAT_KEY = "MTgwMTEz";
+    private static final String CAT_FORMAT_XML = "xml";
+    private static final String CAT_SIZE_MEDIUM = "medium";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -15,6 +35,17 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+
+                findTheCat();
+            }
+        });
     }
 
     @Override
@@ -41,5 +72,24 @@ public class MainActivity extends AppCompatActivity {
 
     private void findTheCat() {
 
+        TheCatAPI theCatAPI = TheCatAPI.retrofit.create(TheCatAPI.class);
+
+        Call<ThaCatApiResponse> call = theCatAPI.loadCats(MainActivity.CAT_FORMAT_XML, MainActivity.CAT_KEY, MainActivity.CAT_SIZE_MEDIUM);
+
+        call.enqueue(new Callback<ThaCatApiResponse>() {
+
+            @Override
+            public void onResponse(Call<ThaCatApiResponse> call, Response<ThaCatApiResponse> response) {
+                if(response.body().getImageList().size() > 0) {
+                    ThaCatApiImage image = response.body().getImageList().get(0);
+                    Log.d("MAINACTIVITY", image.getUrl());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ThaCatApiResponse> call, Throwable t) {
+                Log.d("MAINACTIVITY", t.getMessage());
+            }
+        });
     }
 }
