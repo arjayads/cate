@@ -35,13 +35,11 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-//
+
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
 
                 WebView webView = (WebView) findViewById(R.id.cat_imageView);
                 webView.loadData("Please wait...", "text/html; charset=utf-8", "utf-8");
@@ -50,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
                 findTheCat(webView);
             }
         });
+
+        fab.callOnClick();
     }
 
     @Override
