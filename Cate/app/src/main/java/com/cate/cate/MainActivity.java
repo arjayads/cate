@@ -1,6 +1,8 @@
 package com.cate.cate;
 
+import android.content.res.Configuration;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -18,10 +20,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.json.JSONObject;
-
-import java.util.Iterator;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -33,6 +31,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String CAT_FORMAT_HTML = "html";
     private static final String CAT_SIZE_MEDIUM = "medium";
     private static final String CAT_SIZE_SMALL = "small";
+
+    private static String CAT_IMAGE_URL = "";
+
+    private static Snackbar snackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+
+        clearCatImageUrl();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -78,12 +87,21 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_share_fb) {
             return true;
+        } else if (id == R.id.action_save) {
+            if (CAT_IMAGE_URL.equals("")) {
+                showSnackbar("No cate to save. Tap the floating button to get one.");
+            }
+            Log.d("MAIN", CAT_IMAGE_URL);
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
     private void findTheCat(final WebView webView) {
+
+        snackbar.dismiss();
+
         final DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
@@ -107,8 +125,10 @@ public class MainActivity extends AppCompatActivity {
 
                         ThaCatApiImage image = response.body().getImageList().get(0);
 
+                        CAT_IMAGE_URL = image.getUrl();
+
                         int width = displayMetrics.widthPixels-175;
-                        if(getResources().getConfiguration().orientation == 2) // landscape
+                        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) // landscape
                         {
                             width = displayMetrics.widthPixels-280;
                         }
@@ -120,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
                         findTheCat(webView);
                     }
                 }catch (Exception e) {
+                    clearCatImageUrl();
                     e.getLocalizedMessage();
                     // TODO: show popup error
                 }
@@ -127,6 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ThaCatApiResponse> call, Throwable t) {
+                clearCatImageUrl();
                 // TODO: show popup error
             }
         });
@@ -177,5 +199,22 @@ public class MainActivity extends AppCompatActivity {
 
     private void setWebView(final WebView webView, String content) {
         webView.loadData(content, "text/html; charset=utf-8", "utf-8");
+    }
+
+    private void clearCatImageUrl() {
+        CAT_IMAGE_URL = "";
+    }
+
+    private void showSnackbar(String message) {
+
+        snackbar = Snackbar.make(findViewById(R.id.cat_imageView), message, Snackbar.LENGTH_INDEFINITE);
+
+        snackbar.setAction("OK", new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                snackbar.dismiss();
+            }
+        });
+        snackbar.show();
     }
 }
