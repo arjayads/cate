@@ -15,19 +15,17 @@ import com.cate.cate.api.ThaCatApiImage;
 import com.cate.cate.api.ThaCatApiResponse;
 import com.cate.cate.api.TheCatAPI;
 
-import java.util.List;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.simplexml.SimpleXmlConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String CAT_KEY = "MTgwMTEz";
     private static final String CAT_FORMAT_XML = "xml";
+    private static final String CAT_FORMAT_HTML = "html";
     private static final String CAT_SIZE_MEDIUM = "medium";
+    private static final String CAT_SIZE_SMALL = "small";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+//
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,12 +82,18 @@ public class MainActivity extends AppCompatActivity {
                 try {
 
                     if(response.body().getImageList().size() > 0) {
+
                         ThaCatApiImage image = response.body().getImageList().get(0);
 
-                        WebView webView = (WebView) findViewById(R.id.image_webview);
-                        webView.loadUrl(image.getUrl());
+
+                        WebView webView = (WebView ) findViewById(R.id.cat_imageView);
+
+                        String content = "<a target='_blank' href='"+ image.getSourceUrl() +"'><img style='object-fit: cover; height: auto; width: 200px;' src='"+image.getUrl()+"'></a>";
+                        webView.loadData(content, "text/html; charset=utf-8", "utf-8");
+
+                        Log.d("MAIN", content);
                     } else {
-                        // TODO: show popup error
+                        findTheCat();
                     }
                 }catch (Exception e) {
                     e.getLocalizedMessage();
