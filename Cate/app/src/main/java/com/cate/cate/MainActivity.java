@@ -105,8 +105,8 @@ public class MainActivity extends AppCompatActivity {
                 showSnackbar("No cate to save. Tap the floating button to get one.");
             } else {
                 saveCateImage();
+                showSnackbar("Picture has been saved in Download folder");
             }
-            Log.d("MAIN", CAT_IMAGE_URL);
             return true;
         }
 
