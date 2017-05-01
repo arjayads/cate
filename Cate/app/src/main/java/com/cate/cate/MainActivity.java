@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.WebView;
 
 import com.cate.cate.api.ThaCatApiImage;
 import com.cate.cate.api.ThaCatApiResponse;
@@ -80,15 +81,25 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call<ThaCatApiResponse> call, Response<ThaCatApiResponse> response) {
-                if(response.body().getImageList().size() > 0) {
-                    ThaCatApiImage image = response.body().getImageList().get(0);
-                    Log.d("MAINACTIVITY", image.getUrl());
+                try {
+
+                    if(response.body().getImageList().size() > 0) {
+                        ThaCatApiImage image = response.body().getImageList().get(0);
+
+                        WebView webView = (WebView) findViewById(R.id.image_webview);
+                        webView.loadUrl(image.getUrl());
+                    } else {
+                        // TODO: show popup error
+                    }
+                }catch (Exception e) {
+                    e.getLocalizedMessage();
+                    // TODO: show popup error
                 }
             }
 
             @Override
             public void onFailure(Call<ThaCatApiResponse> call, Throwable t) {
-                Log.d("MAINACTIVITY", t.getMessage());
+                // TODO: show popup error
             }
         });
     }
