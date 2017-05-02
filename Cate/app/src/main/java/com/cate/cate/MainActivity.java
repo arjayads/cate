@@ -155,11 +155,8 @@ public class MainActivity extends AppCompatActivity {
             CAT_IMAGE_URL = image.getUrl();
             CAT_IMAGE_RESOURCE_URL = image.getSourceUrl();
 
-            // dont work if called once
-            webView.loadData(webViewContent(), "text/html; charset=utf-8", "utf-8");
-            webView.loadData(webViewContent(), "text/html; charset=utf-8", "utf-8");
+            webView.loadDataWithBaseURL(CAT_IMAGE_URL, webViewContent(), "text/html", "utf-8", null);
 
-            Log.d("MAIN", webViewContent());
             imageList.remove(0);
 
             return;
