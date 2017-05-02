@@ -48,6 +48,9 @@ public class MainActivity extends AppCompatActivity {
     private static String CAT_IMAGE_URL = "";
     private static String CAT_TAG = "CATE";
 
+    private static int WIDTH_SUB_SM = 175;
+    private static int WIDTH_SUB_LG = 280;
+
     private static Snackbar snackbar;
 
     private Handler mHandler = new Handler();
@@ -69,9 +72,6 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
-                // TODO: internet availability
-                webView.loadData(getResources().getString(R.string.please_wait), "text/html; charset=utf-8", "utf-8");
                 findTheCat(webView);
             }
         });
@@ -134,12 +134,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void findTheCat(final WebView webView) {
 
+        final DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+
+        webView.loadData(getResources().getString(R.string.please_wait), "text/html; charset=utf-8", "utf-8");
+
         if (snackbar != null) {
             snackbar.dismiss();
         }
-
-        final DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
         String catSize = MainActivity.CAT_SIZE_SMALL;
 
@@ -150,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         TheCatAPI theCatAPI = TheCatAPI.retrofitCat.create(TheCatAPI.class);
 
         Call<ThaCatApiResponse> call = theCatAPI.loadCats(MainActivity.CAT_FORMAT_XML, MainActivity.CAT_KEY, catSize);
+
 
         call.enqueue(new Callback<ThaCatApiResponse>() {
 
@@ -163,14 +166,16 @@ public class MainActivity extends AppCompatActivity {
 
                         CAT_IMAGE_URL = image.getUrl();
 
-                        int width = displayMetrics.widthPixels-175;
+                        int width = displayMetrics.widthPixels-WIDTH_SUB_SM;
                         if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) // landscape
                         {
-                            width = displayMetrics.widthPixels-280;
+                            width = displayMetrics.widthPixels-WIDTH_SUB_LG;
                         }
 
-                        String content = "<a target='_blank' href='"+ image.getSourceUrl() +"'><img style='object-fit: cover; height: auto; width: "+width+"px;' src='"+image.getUrl()+"'></a>";
+                        String content = "<div style='position:relative; width:100%; height:70%; background-color: #FFEBCD;'><a target='_blank' href='"+ image.getSourceUrl() +"'><img style='object-fit: cover; height: auto; width: "+width+"px;' src='"+image.getUrl()+"'></a></div>";
                         webView.loadData(content, "text/html; charset=utf-8", "utf-8");
+
+                        Log.d("MAIN", content);
 
                     } else {
                         findTheCat(webView);
