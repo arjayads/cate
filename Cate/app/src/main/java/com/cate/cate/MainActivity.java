@@ -1,7 +1,6 @@
 package com.cate.cate;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -31,6 +30,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import retrofit2.Call;
@@ -41,22 +42,21 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String CAT_KEY = "MTgwMTEz";
     private static final String CAT_FORMAT_XML = "xml";
-    private static final String CAT_FORMAT_HTML = "html";
     private static final String CAT_SIZE_MEDIUM = "medium";
     private static final String CAT_SIZE_SMALL = "small";
+    private static final String CAT_RESULT_PER_PAGE = "15";
 
     private static String CAT_IMAGE_URL = "";
     private static String CAT_IMAGE_RESOURCE_URL = "";
     private static String CAT_TAG = "CATE";
-
-    private static int WIDTH_SUB_SM = 175;
-    private static int WIDTH_SUB_LG = 280;
 
     private static Snackbar snackbar;
 
     private Handler mHandler = new Handler();
     private boolean isRunning = true;
     private boolean hasInternet = false;
+
+    private List<ThaCatApiImage> imageList = new ArrayList<>();
 
     private WebView webView;
     final DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -70,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         webView = (WebView) findViewById(R.id.cat_imageView);
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -137,12 +138,31 @@ public class MainActivity extends AppCompatActivity {
 
     private void findTheCat() {
 
+        clearCatImageUrl();
+
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
         webView.loadData(getResources().getString(R.string.please_wait), "text/html; charset=utf-8", "utf-8");
 
         if (snackbar != null) {
             snackbar.dismiss();
+        }
+
+        if ( ! imageList.isEmpty() ) {
+
+            ThaCatApiImage image = imageList.get(0);
+
+            CAT_IMAGE_URL = image.getUrl();
+            CAT_IMAGE_RESOURCE_URL = image.getSourceUrl();
+
+            // dont work if called once
+            webView.loadData(webViewContent(), "text/html; charset=utf-8", "utf-8");
+            webView.loadData(webViewContent(), "text/html; charset=utf-8", "utf-8");
+
+            Log.d("MAIN", webViewContent());
+            imageList.remove(0);
+
+            return;
         }
 
         String catSize = MainActivity.CAT_SIZE_SMALL;
@@ -153,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
         TheCatAPI theCatAPI = TheCatAPI.retrofitCat.create(TheCatAPI.class);
 
-        Call<ThaCatApiResponse> call = theCatAPI.loadCats(MainActivity.CAT_FORMAT_XML, MainActivity.CAT_KEY, catSize);
+        Call<ThaCatApiResponse> call = theCatAPI.loadCats(MainActivity.CAT_FORMAT_XML, MainActivity.CAT_KEY, catSize, MainActivity.CAT_RESULT_PER_PAGE);
 
 
         call.enqueue(new Callback<ThaCatApiResponse>() {
@@ -164,12 +184,16 @@ public class MainActivity extends AppCompatActivity {
 
                     if(response.body().getImageList().size() > 0) {
 
-                        ThaCatApiImage image = response.body().getImageList().get(0);
+                        imageList = response.body().getImageList();
+
+                        ThaCatApiImage image = imageList.get(0);
 
                         CAT_IMAGE_URL = image.getUrl();
                         CAT_IMAGE_RESOURCE_URL = image.getSourceUrl();
 
                         webView.loadData(webViewContent(), "text/html; charset=utf-8", "utf-8");
+
+                        imageList.remove(0);
 
                     } else {
                         findTheCat();
@@ -190,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String webViewContent() {
-        return "<div style='position:relative; width:100%; height:50%; background-color: #FFEBCD;'><a target='_blank' href='"+ CAT_IMAGE_RESOURCE_URL +"'><img style='object-fit: cover; height: auto; width: 100%;' src='"+CAT_IMAGE_URL+"'></a></div>";
+        return "<div style='padding: 0;position:relative; width:100%; height:50%; background-color: #FFEBCD;'><a target='_blank' href='"+ CAT_IMAGE_RESOURCE_URL +"'><img style='padding: 0; object-fit: cover; height: auto; width: 100%;' src='"+CAT_IMAGE_URL+"'></a></div>";
     }
 
     private void randomCatFacts() {

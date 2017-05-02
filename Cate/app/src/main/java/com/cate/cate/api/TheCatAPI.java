@@ -13,7 +13,7 @@ public interface TheCatAPI {
     String FACTS_ENDPOINT = "http://catfacts-api.appspot.com/api/";
 
     @GET("get")
-    Call<ThaCatApiResponse> loadCats(@Query("format") String format, @Query("api_key") String apiKey, @Query("size") String size);
+    Call<ThaCatApiResponse> loadCats(@Query("format") String format, @Query("api_key") String apiKey, @Query("size") String size, @Query("results_per_page") String resultsPerPage);
 
     @GET("facts")
     Call<String> loadCatFacts(@Query("number") int format);
