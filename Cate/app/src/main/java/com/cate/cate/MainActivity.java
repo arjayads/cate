@@ -72,10 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // TODO: internet availability
                 webView.loadData(getResources().getString(R.string.please_wait), "text/html; charset=utf-8", "utf-8");
-
-                if (hasInternet) {
-                    findTheCat(webView);
-                }
+                findTheCat(webView);
             }
         });
 
@@ -95,6 +92,14 @@ public class MainActivity extends AppCompatActivity {
         VolleyRequestQueue.getInstance(this).cancelAll(CAT_TAG);
 
         isRunning = false;
+    }
+
+    protected void onResume() {
+        super.onResume();
+
+        if (! isRunning) {
+            isRunning = true;
+        }
     }
 
     @Override
@@ -339,6 +344,10 @@ public class MainActivity extends AppCompatActivity {
 
         } else {
             hasInternet = true;
+
+            if (snackbar != null) {
+                snackbar.dismiss();
+            }
         }
     }
 }
