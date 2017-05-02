@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String CAT_SIZE_SMALL = "small";
 
     private static String CAT_IMAGE_URL = "";
+    private static String CAT_IMAGE_RESOURCE_URL = "";
     private static String CAT_TAG = "CATE";
 
     private static int WIDTH_SUB_SM = 175;
@@ -57,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean isRunning = true;
     private boolean hasInternet = false;
 
+    private WebView webView;
+    final DisplayMetrics displayMetrics = new DisplayMetrics();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,14 +69,13 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-        final WebView webView = (WebView) findViewById(R.id.cat_imageView);
+        webView = (WebView) findViewById(R.id.cat_imageView);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                findTheCat(webView);
+                findTheCat();
             }
         });
 
@@ -80,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
         internetChecker();
 
-        randomCatFacts(webView);
+        randomCatFacts();
     }
 
     @Override
@@ -132,9 +135,8 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void findTheCat(final WebView webView) {
+    private void findTheCat() {
 
-        final DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
 
         webView.loadData(getResources().getString(R.string.please_wait), "text/html; charset=utf-8", "utf-8");
@@ -165,20 +167,12 @@ public class MainActivity extends AppCompatActivity {
                         ThaCatApiImage image = response.body().getImageList().get(0);
 
                         CAT_IMAGE_URL = image.getUrl();
+                        CAT_IMAGE_RESOURCE_URL = image.getSourceUrl();
 
-                        int width = displayMetrics.widthPixels-WIDTH_SUB_SM;
-                        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) // landscape
-                        {
-                            width = displayMetrics.widthPixels-WIDTH_SUB_LG;
-                        }
-
-                        String content = "<div style='position:relative; width:100%; height:70%; background-color: #FFEBCD;'><a target='_blank' href='"+ image.getSourceUrl() +"'><img style='object-fit: cover; height: auto; width: "+width+"px;' src='"+image.getUrl()+"'></a></div>";
-                        webView.loadData(content, "text/html; charset=utf-8", "utf-8");
-
-                        Log.d("MAIN", content);
+                        webView.loadData(webViewContent(), "text/html; charset=utf-8", "utf-8");
 
                     } else {
-                        findTheCat(webView);
+                        findTheCat();
                     }
                 }catch (Exception e) {
                     clearCatImageUrl();
@@ -195,7 +189,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void randomCatFacts(final WebView webView) {
+    private String webViewContent() {
+        return "<div style='position:relative; width:100%; height:50%; background-color: #FFEBCD;'><a target='_blank' href='"+ CAT_IMAGE_RESOURCE_URL +"'><img style='object-fit: cover; height: auto; width: 100%;' src='"+CAT_IMAGE_URL+"'></a></div>";
+    }
+
+    private void randomCatFacts() {
 
         TheCatAPI theCatAPI = TheCatAPI.retrofitFacts.create(TheCatAPI.class);
 
@@ -244,6 +242,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void clearCatImageUrl() {
         CAT_IMAGE_URL = "";
+        CAT_IMAGE_RESOURCE_URL = "";
     }
 
     private void showSnackbar(String message) {
