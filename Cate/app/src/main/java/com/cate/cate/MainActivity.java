@@ -1,9 +1,12 @@
 package com.cate.cate;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -121,7 +124,39 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_share_fb) {
+        if (id == R.id.action_share_fb ) {
+
+            if ( ! CAT_IMAGE_URL.equals("")) {
+
+                String urlToShare = CAT_IMAGE_URL;
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+
+                intent.putExtra(Intent.EXTRA_TEXT, urlToShare);
+
+                // See if official Facebook app is found
+                boolean facebookAppFound = false;
+                List<ResolveInfo> matches = getPackageManager().queryIntentActivities(intent, 0);
+                for (ResolveInfo info : matches) {
+                    if (info.activityInfo.packageName.toLowerCase().startsWith("com.facebook.katana")) {
+                        intent.setPackage(info.activityInfo.packageName);
+                        facebookAppFound = true;
+                        break;
+                    }
+                }
+
+                // As fallback, launch sharer.php in a browser
+                if (!facebookAppFound) {
+                    String sharerUrl = "https://www.facebook.com/sharer/sharer.php?u=" + urlToShare;
+                    intent = new Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl));
+                }
+
+                startActivity(intent);
+
+            } else {
+                showSnackbar("No cate to share. Tap the floating button to get one.");
+            }
+
             return true;
         } else if (id == R.id.action_save) {
             if (CAT_IMAGE_URL.equals("")) {
