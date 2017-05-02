@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private String webViewContent() {
-        return "<div style='padding: 0;position:relative; width:100%; height:50%; background-color: #FFEBCD;'><a target='_blank' href='"+ CAT_IMAGE_RESOURCE_URL +"'><img style='padding: 0; object-fit: cover; height: auto; width: 100%;' src='"+CAT_IMAGE_URL+"'></a></div>";
+        return "<body style='margin:0;padding:0;'><div style='padding: 0;position:relative; width:100%; height:50%; background-color: #FFEBCD;'><a target='_blank' href='"+ CAT_IMAGE_RESOURCE_URL +"'><img style='padding: 0; object-fit: cover; height: auto; width: 100%;' src='"+CAT_IMAGE_URL+"'></a></div></body>";
     }
 
     private void randomCatFacts() {
