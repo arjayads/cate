@@ -1,8 +1,12 @@
 package com.cate.cate;
 
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -46,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static Snackbar snackbar;
 
+    private Handler mHandler = new Handler();
+    private boolean isRunning = true;
+    private boolean hasInternet = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,13 +72,18 @@ public class MainActivity extends AppCompatActivity {
 
                 // TODO: internet availability
                 webView.loadData(getResources().getString(R.string.please_wait), "text/html; charset=utf-8", "utf-8");
-                findTheCat(webView);
+
+                if (hasInternet) {
+                    findTheCat(webView);
+                }
             }
         });
 
         webView.loadData(getResources().getString(R.string.please_wait), "text/html; charset=utf-8", "utf-8");
 
-         randomCatFacts(webView);
+        internetChecker();
+
+        randomCatFacts(webView);
     }
 
     @Override
@@ -81,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
         clearCatImageUrl();
 
         VolleyRequestQueue.getInstance(this).cancelAll(CAT_TAG);
+
+        isRunning = false;
     }
 
     @Override
@@ -285,5 +299,46 @@ public class MainActivity extends AppCompatActivity {
 
         // Access the RequestQueue through your singleton class.
         VolleyRequestQueue.getInstance(this).addToRequestQueue(imageRequest);
+    }
+
+    private void internetChecker() {
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // TODO Auto-generated method stub
+                while (isRunning) {
+                    try {
+                        Thread.sleep(10000);
+                        mHandler.post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                // TODO Auto-generated method stub
+                                // Write your code here to update the UI.
+                                checkConnectivity();
+                            }
+                        });
+                    } catch (Exception e) {
+                        // TODO: handle exception
+                    }
+                }
+            }
+        }).start();
+    }
+
+    private void checkConnectivity() {
+
+        ConnectivityManager cn=(ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo nf=cn.getActiveNetworkInfo();
+
+        if( nf == null || nf.isConnected() == false )
+        {
+            hasInternet = false;
+            showSnackbar("Network is not available");
+
+        } else {
+            hasInternet = true;
+        }
     }
 }
