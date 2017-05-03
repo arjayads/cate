@@ -68,6 +68,33 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
     final DisplayMetrics displayMetrics = new DisplayMetrics();
 
+    private String[] badWords = {
+            "masturbate",
+            "fuck",
+            "f*ck",
+            "f**k",
+            "f#ck",
+            "shit",
+            "sh!t",
+            "sh*t",
+            "sh*t",
+            "dick",
+            "d*ck",
+            "d!ck",
+            "bitch",
+            "b!tch",
+            "b*tch",
+            "asshole",
+            "a**hole",
+            "ahole",
+            "arsehole",
+            "slut",
+            "sl*t",
+            "douche",
+            "d**che",
+            "fag",
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -257,13 +284,19 @@ public class MainActivity extends AppCompatActivity {
 
                             String content = facts.get(0).toString();
 
-                            String html = "<h2>Today's fact about Cate</h2><h3>"+content+"</h3>";
+                            if (! containsBadWord(content)) {
 
-                            setWebView(webView, html);
+                                String html = "<h2>Today's fact about Cate</h2><h3>"+content+"</h3>";
+
+                                setWebView(webView, html);
+
+                            } else {
+                                randomCatFacts();
+                            }
                         }
 
                     } else {
-                        // TODO: show popup error
+                        randomCatFacts();
                     }
 
                 }catch (Exception e) {
@@ -276,6 +309,22 @@ public class MainActivity extends AppCompatActivity {
                 // TODO: show popup error
             }
         });
+    }
+
+    private boolean containsBadWord(String content) {
+
+        if (content != null) {
+            String contentLower = content.toLowerCase();
+
+            for (int x=0; x<badWords.length; x ++) {
+
+                if (contentLower.contains(badWords[x])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private void setWebView(final WebView webView, String content) {
