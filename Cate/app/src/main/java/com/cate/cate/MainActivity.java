@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -15,7 +16,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +33,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -58,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
     private Handler mHandler = new Handler();
     private boolean isRunning = true;
     private boolean hasInternet = false;
+
+    private boolean settingImageToWebview = false;
 
     private List<ThaCatApiImage> imageList = new ArrayList<>();
 
@@ -183,17 +187,8 @@ public class MainActivity extends AppCompatActivity {
             snackbar.dismiss();
         }
 
-        if ( ! imageList.isEmpty() ) {
-
-            ThaCatApiImage image = imageList.get(0);
-
-            CAT_IMAGE_URL = image.getUrl();
-            CAT_IMAGE_RESOURCE_URL = image.getSourceUrl();
-
-            webView.loadDataWithBaseURL(CAT_IMAGE_URL, webViewContent(), "text/html", "utf-8", null);
-
-            imageList.remove(0);
-
+        if(! imageList.isEmpty() && !settingImageToWebview) { // prevent overlapping tasks
+            new WebViewImageSetter().execute("");
             return;
         }
 
@@ -215,17 +210,8 @@ public class MainActivity extends AppCompatActivity {
                 try {
 
                     if(response.body().getImageList().size() > 0) {
-
                         imageList = response.body().getImageList();
-
-                        ThaCatApiImage image = imageList.get(0);
-
-                        CAT_IMAGE_URL = image.getUrl();
-                        CAT_IMAGE_RESOURCE_URL = image.getSourceUrl();
-
-                        webView.loadData(webViewContent(), "text/html; charset=utf-8", "utf-8");
-
-                        imageList.remove(0);
+                        new WebViewImageSetter().execute("");
 
                     } else {
                         findTheCat();
@@ -349,7 +335,6 @@ public class MainActivity extends AppCompatActivity {
                     response.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
 
                 }catch (Exception e) {
-                    Log.d("MAIN", e.getMessage());
                 } finally {
                     try {
 
@@ -409,5 +394,72 @@ public class MainActivity extends AppCompatActivity {
                 snackbar.dismiss();
             }
         }
+    }
+
+
+    private class WebViewImageSetter extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            HttpURLConnection connection = null;
+            try {
+
+                if(! imageList.isEmpty()) {
+
+                    ThaCatApiImage image = imageList.get(0);
+
+                    CAT_IMAGE_URL = image.getUrl();
+                    CAT_IMAGE_RESOURCE_URL = image.getSourceUrl();
+
+                    imageList.remove(0);
+
+                    URL u = new URL(CAT_IMAGE_URL);
+
+                    connection = (HttpURLConnection) u.openConnection();
+                    connection.setRequestMethod("GET");
+                    int code = connection.getResponseCode();
+
+                    if (code == 200) return "OK";
+
+                } else {
+                    return "EMPTY";
+                }
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+            }
+
+            return "Failed";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (result == "OK") {
+
+                webView.loadData(webViewContent(), "text/html; charset=utf-8", "utf-8");
+
+            } else if (result == "EMPTY") {
+
+                findTheCat();
+
+            } else {
+                new WebViewImageSetter().execute("");
+            }
+
+            settingImageToWebview = false;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            settingImageToWebview = true;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
     }
 }
