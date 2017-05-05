@@ -8,6 +8,9 @@
         android:id="@+id/action_share_fb"
         android:title="@string/action_share_fb" app:showAsAction="never"/>
     <item
+        android:id="@+id/action_share_instagram"
+        android:title="@string/action_share_instagram" app:showAsAction="never"/>
+    <item
         android:id="@+id/action_save"
         android:title="@string/action_save" app:showAsAction="never"/>
 </menu>

@@ -60,8 +60,10 @@ public class MainActivity extends AppCompatActivity {
     private Handler mHandler = new Handler();
     private boolean isRunning = true;
     private boolean hasInternet = false;
+    private boolean shareInstagram = false;
 
     private boolean settingImageToWebview = false;
+    private String existingImagePath = "";
 
     private List<ThaCatApiImage> imageList = new ArrayList<>();
 
@@ -125,8 +127,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
 
-        clearCatImageUrl();
-
         VolleyRequestQueue.getInstance(this).cancelAll(CAT_TAG);
 
         isRunning = false;
@@ -138,6 +138,7 @@ public class MainActivity extends AppCompatActivity {
         if (! isRunning) {
             isRunning = true;
         }
+
     }
 
     @Override
@@ -149,6 +150,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
+        shareInstagram = false;
+
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -195,6 +199,15 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 saveCateImage();
                 showSnackbar("Picture has been saved in Download folder");
+            }
+            return true;
+
+        } else if (id == R.id.action_share_instagram) {
+            if (CAT_IMAGE_URL.equals("") && CAT_IMAGE_URL.equals("")) {
+                showSnackbar("No cate to share. Tap the floating button to get one.");
+            } else {
+                shareInstagram = true;
+                saveCateImage();
             }
             return true;
         }
@@ -334,6 +347,7 @@ public class MainActivity extends AppCompatActivity {
     private void clearCatImageUrl() {
         CAT_IMAGE_URL = "";
         CAT_IMAGE_RESOURCE_URL = "";
+        existingImagePath = "";
     }
 
     private void showSnackbar(String message) {
@@ -363,9 +377,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Bitmap response) {
 
+                if(shareInstagram && ! existingImagePath.equals("")) { // already saved
+                    createInstagramIntent("image/*", existingImagePath);
+                    return;
+                }
+
                 OutputStream fOut = null;
 
                 try {
+
                     String imageExtension = imageExtension(CAT_IMAGE_URL);
 
                     final File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS + "/cate/");
@@ -382,6 +402,11 @@ public class MainActivity extends AppCompatActivity {
                     fOut = new FileOutputStream(file);
 
                     response.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+
+                    if (shareInstagram) {
+                        existingImagePath = file.getPath();
+                        createInstagramIntent("image/*", existingImagePath);
+                    }
 
                 }catch (Exception e) {
                 } finally {
@@ -445,6 +470,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void createInstagramIntent(String type, String mediaPath){
+
+        // Create the new Intent using the 'Send' action.
+        Intent share = new Intent(Intent.ACTION_SEND);
+
+        // Set the MIME type
+        share.setType(type);
+
+        // Create the URI from the media
+        File media = new File(mediaPath);
+        Uri uri = Uri.fromFile(media);
+
+        // Add the URI to the Intent.
+        share.putExtra(Intent.EXTRA_STREAM, uri);
+
+        // Broadcast the Intent.
+        startActivity(Intent.createChooser(share, "Share to"));
+    }
 
     private class WebViewImageSetter extends AsyncTask<String, Void, String> {
 
