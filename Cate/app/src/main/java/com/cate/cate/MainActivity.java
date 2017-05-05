@@ -105,6 +105,9 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        getSupportActionBar().setIcon(R.mipmap.ic_launcher);
+        getSupportActionBar().setTitle(R.string.toolbar_title);
+
         webView = (WebView) findViewById(R.id.cat_imageView);
         webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
