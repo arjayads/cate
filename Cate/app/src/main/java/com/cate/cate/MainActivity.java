@@ -95,6 +95,14 @@ public class MainActivity extends AppCompatActivity {
             "douche",
             "d**che",
             "fag",
+            "bullshit",
+            "bullsh*t",
+            "bullsh!t",
+            "b*llshit",
+            "b!llshit",
+            "b!llsh!t",
+            "b#llsh!t",
+            "b#llshit",
     };
 
     @Override
