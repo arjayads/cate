@@ -131,7 +131,8 @@ public class MainActivity extends AppCompatActivity {
 
         internetChecker();
 
-        randomCatFacts();
+        // randomCatFacts();
+        findTheCat();
     }
 
     @Override
